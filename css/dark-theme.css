@@ -1,0 +1,65 @@
+/* Dark Theme */
+:root {
+    --primary-color: #4a6bff;
+    --secondary-color: #6c5ce7;
+    --success-color: #00cec9;
+    --danger-color: #ff4757;
+    --warning-color: #ffa502;
+    --info-color: #1e90ff;
+    --light-color: #2f3640;
+    --dark-color: #212529;
+    --darker-color: #191a1f;
+    --text-color: #f5f6fa;
+    --text-light: #7f8fa6;
+    --border-color: #444;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --code-bg: #1e1e1e;
+    --code-text: #d4d4d4;
+}
+
+body {
+    background-color: var(--darker-color);
+}
+
+.sidebar, .editor-container, .visualization-container, .variable-tracker {
+    background-color: var(--dark-color);
+    border-color: var(--border-color);
+}
+
+header {
+    background-color: var(--dark-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+    color: var(--primary-color);
+}
+
+select, textarea, .code-input {
+    background-color: var(--darker-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.btn-secondary {
+    background-color: var(--darker-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--border-color);
+}
+
+#visualization-canvas {
+    background-color: var(--darker-color);
+}
+
+.visualization-info {
+    background-color: var(--dark-color);
+}
+
+.variable {
+    background-color: var(--darker-color);
+    border: 1px solid var(--border-color);
+}

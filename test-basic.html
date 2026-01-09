@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-title { font-weight: bold; margin-bottom: 10px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>Universal Algorithm Visualizer - Basic Tests</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        // Test results
+        const testResults = [];
+        
+        function addTestResult(name, passed, message = '') {
+            testResults.push({ name, passed, message });
+            
+            const resultsContainer = document.getElementById('test-results');
+            const testSection = document.createElement('div');
+            testSection.className = 'test-section';
+            
+            const title = document.createElement('div');
+            title.className = 'test-title';
+            title.textContent = name;
+            testSection.appendChild(title);
+            
+            const result = document.createElement('div');
+            result.className = `test-result ${passed ? 'success' : 'error'}`;
+            result.textContent = passed ? 'PASSED' : 'FAILED';
+            testSection.appendChild(result);
+            
+            if (message) {
+                const messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                testSection.appendChild(messageElement);
+            }
+            
+            resultsContainer.appendChild(testSection);
+            
+            return passed;
+        }
+        
+        function runTests() {
+            let passedCount = 0;
+            
+            // Test 1: Basic JavaScript execution
+            try {
+                const code = 'function add(a, b) { return a + b; } add(2, 3);';
+                const result = new Function(code)();
+                const testPassed = result === 5;
+                addTestResult('Basic JavaScript Execution', testPassed, `Expected 5, got ${result}`);
+                if (testPassed) passedCount++;
+            } catch (e) {
+                addTestResult('Basic JavaScript Execution', false, `Error: ${e.message}`);
+            }
+            
+            // Test 2: Array operations
+            try {
+                const arr = [3, 1, 4, 1, 5, 9];
+                arr.sort((a, b) => a - b);
+                const testPassed = JSON.stringify(arr) === '[1,1,3,4,5,9]';
+                addTestResult('Array Sorting', testPassed, `Result: ${JSON.stringify(arr)}`);
+                if (testPassed) passedCount++;
+            } catch (e) {
+                addTestResult('Array Sorting', false, `Error: ${e.message}`);
+            }
+            
+            // Test 3: Object operations
+            try {
+                const obj = { x: 10, y: 20 };
+                obj.z = obj.x + obj.y;
+                const testPassed = obj.z === 30;
+                addTestResult('Object Operations', testPassed, `obj.z = ${obj.z}`);
+                if (testPassed) passedCount++;
+            } catch (e) {
+                addTestResult('Object Operations', false, `Error: ${e.message}`);
+            }
+            
+            // Test 4: JSON parsing
+            try {
+                const jsonString = '[1, 2, 3, 4, 5]';
+                const parsed = JSON.parse(jsonString);
+                const testPassed = Array.isArray(parsed) && parsed.length === 5;
+                addTestResult('JSON Parsing', testPassed, `Parsed: ${JSON.stringify(parsed)}`);
+                if (testPassed) passedCount++;
+            } catch (e) {
+                addTestResult('JSON Parsing', false, `Error: ${e.message}`);
+            }
+            
+            // Test 5: Canvas availability
+            try {
+                const canvas = document.createElement('canvas');
+                const testPassed = !!canvas.getContext;
+                addTestResult('Canvas Support', testPassed, 'Canvas API available');
+                if (testPassed) passedCount++;
+            } catch (e) {
+                addTestResult('Canvas Support', false, `Error: ${e.message}`);
+            }
+            
+            // Test 6: DOM manipulation
+            try {
+                const testElement = document.createElement('div');
+                testElement.id = 'test-element';
+                testElement.textContent = 'Test';
+                document.body.appendChild(testElement);
+                const testPassed = document.getElementById('test-element') !== null;
+                addTestResult('DOM Manipulation', testPassed, 'Element created successfully');
+                if (testPassed) passedCount++;
+                
+                // Clean up
+                document.body.removeChild(testElement);
+            } catch (e) {
+                addTestResult('DOM Manipulation', false, `Error: ${e.message}`);
+            }
+            
+            // Summary
+            const summarySection = document.createElement('div');
+            summarySection.className = 'test-section';
+            summarySection.innerHTML = `
+                <div class="test-title">Test Summary</div>
+                <div class="test-result ${passedCount === testResults.length ? 'success' : 'warning'}">
+                    ${passedCount} of ${testResults.length} tests passed
+                </div>
+            `;
+            document.getElementById('test-results').appendChild(summarySection);
+            
+            return passedCount === testResults.length;
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>
