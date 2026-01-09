@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Acorn Walk Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Acorn-Walk Library Test</h1>
+    <div id="test-results"></div>
+    
+    <!-- Load Acorn libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.7.0/acorn.min.js"></script>
+    <script src="https://unpkg.com/acorn-walk@8.3.4/dist/walk.js"></script>
+    
+    <script>
+        function runTests() {
+            const resultsContainer = document.getElementById('test-results');
+            
+            // Test 1: Check if acorn is loaded
+            const test1 = {
+                name: 'Acorn Library Loading',
+                test: () => {
+                    return typeof window.acorn !== 'undefined';
+                }
+            };
+            
+            // Test 2: Check if acorn-walk is loaded
+            const test2 = {
+                name: 'Acorn-Walk Library Loading',
+                test: () => {
+                    // Check multiple possible global variables
+                    return typeof window.acornWalk !== 'undefined' ||
+                           (window.acorn && typeof window.acorn.walk !== 'undefined') ||
+                           typeof window.acorn_walk !== 'undefined' ||
+                           typeof window.walk !== 'undefined';
+                }
+            };
+            
+            // Test 3: Check acorn.parse functionality
+            const test3 = {
+                name: 'Acorn.parse() Functionality',
+                test: () => {
+                    try {
+                        const code = 'function test() { return 42; }';
+                        const ast = window.acorn.parse(code, { ecmaVersion: 2020 });
+                        return ast && ast.type === 'Program';
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            };
+            
+            // Test 4: Check acorn-walk.simple() functionality
+            const test4 = {
+                name: 'Acorn-Walk.simple() Functionality',
+                test: () => {
+                    try {
+                        const code = 'function test() { for(let i = 0; i < 10; i++) { console.log(i); } }';
+                        const ast = window.acorn.parse(code, { ecmaVersion: 2020 });
+                        
+                        // Find the global variables that acorn-walk might use
+                        const walk = window.acornWalk || 
+                                   (window.acorn && window.acorn.walk) || 
+                                   window.acorn_walk || 
+                                   window.walk;
+                        
+                        if (!walk || !walk.simple) {
+                            return false;
+                        }
+                        
+                        let foundForLoop = false;
+                        walk.simple(ast, {
+                            ForStatement(node) {
+                                foundForLoop = true;
+                            }
+                        });
+                        
+                        return foundForLoop;
+                    } catch (e) {
+                        console.error('Test 4 error:', e);
+                        return false;
+                    }
+                }
+            };
+            
+            const tests = [test1, test2, test3, test4];
+            let passed = 0;
+            
+            tests.forEach(test => {
+                const result = test.test();
+                const resultElement = document.createElement('div');
+                resultElement.className = `test-result ${result ? 'success' : 'error'}`;
+                resultElement.innerHTML = `<strong>${test.name}:</strong> ${result ? 'PASSED' : 'FAILED'}`;
+                resultsContainer.appendChild(resultElement);
+                
+                if (result) passed++;
+            });
+            
+            // Add debug info
+            const debugInfo = document.createElement('div');
+            debugInfo.className = 'test-result info';
+            debugInfo.innerHTML = `
+                <strong>Debug Info:</strong><br>
+                window.acorn: ${typeof window.acorn}<br>
+                window.acornWalk: ${typeof window.acornWalk}<br>
+                window.acorn.walk: ${window.acorn && typeof window.acorn.walk}<br>
+                window.acorn_walk: ${typeof window.acorn_walk}<br>
+                window.walk: ${typeof window.walk}<br>
+                acorn.parse exists: ${window.acorn && typeof window.acorn.parse}<br>
+                acornWalk.simple exists: ${window.acornWalk && typeof window.acornWalk.simple}
+            `;
+            resultsContainer.appendChild(debugInfo);
+            
+            const summary = document.createElement('div');
+            summary.innerHTML = `<strong>Summary:</strong> ${passed}/${tests.length} tests passed`;
+            resultsContainer.appendChild(summary);
+        }
+        
+        // Run tests after a short delay to ensure libraries are loaded
+        setTimeout(runTests, 100);
+    </script>
+</body>
+</html>

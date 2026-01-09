@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acorn-Walk Library Global Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Acorn-Walk Global Variable Check</h1>
+    <div id="test-results"></div>
+    
+    <!-- Load Acorn libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.7.0/acorn.min.js"></script>
+    <script src="https://unpkg.com/acorn-walk@8.3.4/dist/walk.js"></script>
+    
+    <script>
+        function checkGlobals() {
+            const resultsContainer = document.getElementById('test-results');
+            
+            const globals = [
+                'acorn', 'acornWalk', 'walk', 'acorn_walk',
+                'window.acorn', 'window.acornWalk', 'window.walk', 'window.acorn_walk'
+            ];
+            
+            globals.forEach(global => {
+                try {
+                    let exists = false;
+                    let value = null;
+                    
+                    // Evaluate the global variable safely
+                    if (global === 'acorn') {
+                        exists = typeof window.acorn !== 'undefined';
+                        value = window.acorn;
+                    } else if (global === 'acornWalk') {
+                        exists = typeof window.acornWalk !== 'undefined';
+                        value = window.acornWalk;
+                    } else if (global === 'walk') {
+                        exists = typeof window.walk !== 'undefined';
+                        value = window.walk;
+                    } else if (global === 'acorn_walk') {
+                        exists = typeof window.acorn_walk !== 'undefined';
+                        value = window.acorn_walk;
+                    } else if (global === 'window.acorn') {
+                        exists = typeof window.acorn !== 'undefined';
+                        value = window.acorn;
+                    } else if (global === 'window.acornWalk') {
+                        exists = typeof window.acornWalk !== 'undefined';
+                        value = window.acornWalk;
+                    } else if (global === 'window.walk') {
+                        exists = typeof window.walk !== 'undefined';
+                        value = window.walk;
+                    } else if (global === 'window.acorn_walk') {
+                        exists = typeof window.acorn_walk !== 'undefined';
+                        value = window.acorn_walk;
+                    }
+                    
+                    const resultElement = document.createElement('div');
+                    resultElement.className = `test-result ${exists ? 'success' : 'error'}`;
+                    
+                    let details = '';
+                    if (exists && value) {
+                        if (typeof value === 'function') {
+                            details = ` (${value.name || 'function'})`;
+                        } else if (typeof value === 'object' && value !== null) {
+                            const methods = Object.getOwnPropertyNames(value).slice(0, 5);
+                            details = ` (${Object.keys(value).length} keys: ${methods.join(', ')}${Object.keys(value).length > 5 ? '...' : ''})`;
+                        } else {
+                            details = ` (${typeof value})`;
+                        }
+                    }
+                    
+                    resultElement.innerHTML = `<strong>${global}:</strong> ${exists ? 'EXISTS' : 'NOT FOUND'}${details}`;
+                    resultsContainer.appendChild(resultElement);
+                    
+                } catch (error) {
+                    const resultElement = document.createElement('div');
+                    resultElement.className = 'test-result error';
+                    resultElement.innerHTML = `<strong>${global}:</strong> ERROR - ${error.message}`;
+                    resultsContainer.appendChild(resultElement);
+                }
+            });
+            
+            // Test if walk.simple exists
+            const testWalk = window.acornWalk || (window.acorn && window.acorn.walk) || window.walk || window.acorn_walk;
+            if (testWalk && testWalk.simple) {
+                const resultElement = document.createElement('div');
+                resultElement.className = 'test-result success';
+                resultElement.innerHTML = `<strong>walk.simple:</strong> AVAILABLE and working!`;
+                resultsContainer.appendChild(resultElement);
+            } else {
+                const resultElement = document.createElement('div');
+                resultElement.className = 'test-result error';
+                resultElement.innerHTML = `<strong>walk.simple:</strong> NOT AVAILABLE`;
+                resultsContainer.appendChild(resultElement);
+            }
+        }
+        
+        // Check immediately and after a short delay
+        setTimeout(checkGlobals, 50);
+    </script>
+</body>
+</html>

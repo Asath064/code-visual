@@ -6,9 +6,23 @@ class CodeExecutor {
         this.executionSteps = [];
         this.variableStates = [];
         
-        // Load required libraries if available
+        // Load required libraries with proper fallbacks
         this.acorn = window.acorn;
-        this.acornWalk = window.acornWalk;
+        
+        // Acorn-walk can be accessed in multiple ways depending on how it's loaded
+        // Try different global variable names that acorn-walk might use
+        this.acornWalk = window.acornWalk || 
+                         (window.acorn && window.acorn.walk) || 
+                         window.acorn_walk || 
+                         (window.acorn && window.acornWalk) ||
+                         window.walk;
+        
+        // Defensive check to ensure acorn-walk is available
+        if (!this.acornWalk) {
+            console.error('acorn-walk library not loaded. AST walking will not work.');
+        } else {
+            console.log('acorn-walk loaded successfully');
+        }
     }
     
     async executeCode(code, input, algorithmType, language) {
@@ -74,6 +88,11 @@ class CodeExecutor {
     
     async executeJavaScript(code, algorithmType) {
         try {
+            // Check if acorn is available
+            if (!this.acorn) {
+                throw new Error('Acorn library not loaded. Cannot parse JavaScript code.');
+            }
+            
             // Parse the code using Acorn
             const ast = this.acorn.parse(code, {
                 ecmaVersion: 2020,
@@ -125,143 +144,197 @@ class CodeExecutor {
     }
     
     analyzeSortAlgorithm(ast) {
+        if (!this.acornWalk) {
+            console.warn('acorn-walk not available, skipping sort algorithm analysis');
+            return;
+        }
+        
         // Look for common sorting patterns
-        this.acornWalk.simple(ast, {
-            ForStatement(node) {
-                this.addExecutionStep({
-                    type: 'loop_start',
-                    explanation: 'Starting sorting loop',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            IfStatement(node) {
-                this.addExecutionStep({
-                    type: 'comparison',
-                    explanation: 'Comparing elements',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            }
-        }, this);
+        try {
+            this.acornWalk.simple(ast, {
+                ForStatement(node) {
+                    this.addExecutionStep({
+                        type: 'loop_start',
+                        explanation: 'Starting sorting loop',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                IfStatement(node) {
+                    this.addExecutionStep({
+                        type: 'comparison',
+                        explanation: 'Comparing elements',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                }
+            }, this);
+        } catch (error) {
+            console.error('Error analyzing sort algorithm AST:', error);
+        }
     }
     
     analyzeSearchAlgorithm(ast) {
+        if (!this.acornWalk) {
+            console.warn('acorn-walk not available, skipping search algorithm analysis');
+            return;
+        }
+        
         // Look for search patterns
-        this.acornWalk.simple(ast, {
-            WhileStatement(node) {
-                this.addExecutionStep({
-                    type: 'search_loop',
-                    explanation: 'Searching through elements',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            IfStatement(node) {
-                this.addExecutionStep({
-                    type: 'found_check',
-                    explanation: 'Checking if element found',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            }
-        }, this);
+        try {
+            this.acornWalk.simple(ast, {
+                WhileStatement(node) {
+                    this.addExecutionStep({
+                        type: 'search_loop',
+                        explanation: 'Searching through elements',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                IfStatement(node) {
+                    this.addExecutionStep({
+                        type: 'found_check',
+                        explanation: 'Checking if element found',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                }
+            }, this);
+        } catch (error) {
+            console.error('Error analyzing search algorithm AST:', error);
+        }
     }
     
     analyzeGraphAlgorithm(ast) {
+        if (!this.acornWalk) {
+            console.warn('acorn-walk not available, skipping graph algorithm analysis');
+            return;
+        }
+        
         // Look for graph traversal patterns
-        this.acornWalk.simple(ast, {
-            FunctionDeclaration(node) {
-                if (node.id && node.id.name.includes('visit')) {
-                    this.addExecutionStep({
-                        type: 'graph_visit',
-                        explanation: 'Visiting graph node',
-                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                    });
+        try {
+            this.acornWalk.simple(ast, {
+                FunctionDeclaration(node) {
+                    if (node.id && node.id.name.includes('visit')) {
+                        this.addExecutionStep({
+                            type: 'graph_visit',
+                            explanation: 'Visiting graph node',
+                            lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                        });
+                    }
                 }
-            }
-        }, this);
+            }, this);
+        } catch (error) {
+            console.error('Error analyzing graph algorithm AST:', error);
+        }
     }
     
     analyzeRecursiveAlgorithm(ast) {
+        if (!this.acornWalk) {
+            console.warn('acorn-walk not available, skipping recursive algorithm analysis');
+            return;
+        }
+        
         // Look for recursive function calls
-        this.acornWalk.simple(ast, {
-            CallExpression(node) {
-                if (node.callee.type === 'Identifier' && 
-                    this.isRecursiveCall(node.callee.name, ast)) {
-                    this.addExecutionStep({
-                        type: 'recursive_call',
-                        explanation: 'Making recursive call',
-                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                    });
+        try {
+            this.acornWalk.simple(ast, {
+                CallExpression(node) {
+                    if (node.callee.type === 'Identifier' && 
+                        this.isRecursiveCall(node.callee.name, ast)) {
+                        this.addExecutionStep({
+                            type: 'recursive_call',
+                            explanation: 'Making recursive call',
+                            lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                        });
+                    }
                 }
-            }
-        }, this);
+            }, this);
+        } catch (error) {
+            console.error('Error analyzing recursive algorithm AST:', error);
+        }
     }
     
     isRecursiveCall(functionName, ast) {
+        if (!this.acornWalk) {
+            console.warn('acorn-walk not available, cannot check for recursive calls');
+            return false;
+        }
+        
         // Check if the function calls itself
         let hasFunction = false;
         let callsItself = false;
         
-        this.acornWalk.simple(ast, {
-            FunctionDeclaration(node) {
-                if (node.id.name === functionName) {
-                    hasFunction = true;
+        try {
+            this.acornWalk.simple(ast, {
+                FunctionDeclaration(node) {
+                    if (node.id.name === functionName) {
+                        hasFunction = true;
+                    }
+                },
+                CallExpression(node) {
+                    if (hasFunction && node.callee.type === 'Identifier' && node.callee.name === functionName) {
+                        callsItself = true;
+                    }
                 }
-            },
-            CallExpression(node) {
-                if (hasFunction && node.callee.type === 'Identifier' && node.callee.name === functionName) {
-                    callsItself = true;
-                }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error checking for recursive calls:', error);
+        }
         
         return callsItself;
     }
     
     analyzeGenericAlgorithm(ast) {
+        if (!this.acornWalk) {
+            console.warn('acorn-walk not available, skipping generic algorithm analysis');
+            return;
+        }
+        
         // Generic analysis for any algorithm
-        this.acornWalk.simple(ast, {
-            FunctionDeclaration(node) {
-                this.addExecutionStep({
-                    type: 'function_declaration',
-                    explanation: `Declared function: ${node.id.name}`,
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            VariableDeclaration(node) {
-                this.addExecutionStep({
-                    type: 'variable_declaration',
-                    explanation: 'Declared variables',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            ForStatement(node) {
-                this.addExecutionStep({
-                    type: 'for_loop',
-                    explanation: 'Starting for loop',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            WhileStatement(node) {
-                this.addExecutionStep({
-                    type: 'while_loop',
-                    explanation: 'Starting while loop',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            IfStatement(node) {
-                this.addExecutionStep({
-                    type: 'if_statement',
-                    explanation: 'Conditional statement',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            },
-            ReturnStatement(node) {
-                this.addExecutionStep({
-                    type: 'return',
-                    explanation: 'Return statement',
-                    lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
-                });
-            }
-        }, this);
+        try {
+            this.acornWalk.simple(ast, {
+                FunctionDeclaration(node) {
+                    this.addExecutionStep({
+                        type: 'function_declaration',
+                        explanation: `Declared function: ${node.id.name}`,
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                VariableDeclaration(node) {
+                    this.addExecutionStep({
+                        type: 'variable_declaration',
+                        explanation: 'Declared variables',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                ForStatement(node) {
+                    this.addExecutionStep({
+                        type: 'for_loop',
+                        explanation: 'Starting for loop',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                WhileStatement(node) {
+                    this.addExecutionStep({
+                        type: 'while_loop',
+                        explanation: 'Starting while loop',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                IfStatement(node) {
+                    this.addExecutionStep({
+                        type: 'if_statement',
+                        explanation: 'Conditional statement',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                },
+                ReturnStatement(node) {
+                    this.addExecutionStep({
+                        type: 'return',
+                        explanation: 'Return statement',
+                        lineNumber: node.loc ? node.loc.start.line - 1 : this.currentLine
+                    });
+                }
+            }, this);
+        } catch (error) {
+            console.error('Error analyzing generic algorithm AST:', error);
+        }
     }
     
     async executeAST(ast) {
