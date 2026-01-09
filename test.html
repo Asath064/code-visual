@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Algorithm Visualizer Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Algorithm Visualizer Test</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        // Test the core functionality
+        const tests = [
+            {
+                name: 'Basic JavaScript Execution',
+                test: () => {
+                    try {
+                        const code = 'function test() { return 42; } test();';
+                        const result = new Function(code)();
+                        return result === 42;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            },
+            {
+                name: 'Array Operations',
+                test: () => {
+                    try {
+                        const arr = [5, 2, 9, 1, 5, 6];
+                        arr.sort((a, b) => a - b);
+                        return JSON.stringify(arr) === '[1,2,5,5,6,9]';
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            },
+            {
+                name: 'Object Operations',
+                test: () => {
+                    try {
+                        const obj = { a: 1, b: 2 };
+                        obj.c = 3;
+                        return obj.c === 3;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            }
+        ];
+        
+        function runTests() {
+            const resultsContainer = document.getElementById('test-results');
+            let passed = 0;
+            
+            tests.forEach(test => {
+                const result = test.test();
+                const resultElement = document.createElement('div');
+                resultElement.className = `test-result ${result ? 'success' : 'error'}`;
+                resultElement.innerHTML = `<strong>${test.name}:</strong> ${result ? 'PASSED' : 'FAILED'}`;
+                resultsContainer.appendChild(resultElement);
+                
+                if (result) passed++;
+            });
+            
+            const summary = document.createElement('div');
+            summary.innerHTML = `<strong>Summary:</strong> ${passed}/${tests.length} tests passed`;
+            resultsContainer.appendChild(summary);
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Integration Test - Universal Algorithm Visualizer</h1>
+        
+        <div id="test-results"></div>
+        
+        <script>
+            // Test the integration of all components
+            const tests = [
+                {
+                    name: 'Component Initialization',
+                    test: async () => {
+                        try {
+                            // Test that all classes can be instantiated
+                            const visualizationEngine = new VisualizationEngine();
+                            const codeExecutor = new CodeExecutor();
+                            const uiControls = new UIControls();
+                            
+                            return {
+                                passed: true,
+                                message: 'All components initialized successfully'
+                            };
+                        } catch (e) {
+                            return {
+                                passed: false,
+                                message: `Initialization failed: ${e.message}`
+                            };
+                        }
+                    }
+                },
+                {
+                    name: 'Basic Visualization',
+                    test: async () => {
+                        try {
+                            const engine = new VisualizationEngine();
+                            
+                            // Test basic visualization
+                            const step = {
+                                visualization: {
+                                    type: 'variables',
+                                    variables: { test: 'value', count: 42 }
+                                }
+                            };
+                            
+                            engine.drawStep(step);
+                            
+                            return {
+                                passed: true,
+                                message: 'Basic visualization rendered successfully'
+                            };
+                        } catch (e) {
+                            return {
+                                passed: false,
+                                message: `Visualization failed: ${e.message}`
+                            };
+                        }
+                    }
+                },
+                {
+                    name: 'Code Execution',
+                    test: async () => {
+                        try {
+                            const executor = new CodeExecutor();
+                            
+                            // Test simple code execution
+                            const code = 'function add(a, b) { return a + b; }';
+                            const input = '[1, 2]';
+                            
+                            const steps = await executor.executeCode(code, input, 'sort', 'javascript');
+                            
+                            return {
+                                passed: steps.length > 0,
+                                message: `Generated ${steps.length} execution steps`
+                            };
+                        } catch (e) {
+                            return {
+                                passed: false,
+                                message: `Execution failed: ${e.message}`
+                            };
+                        }
+                    }
+                },
+                {
+                    name: 'Array Visualization',
+                    test: async () => {
+                        try {
+                            const engine = new VisualizationEngine();
+                            
+                            // Test array visualization
+                            const step = {
+                                visualization: {
+                                    type: 'array',
+                                    array: [5, 2, 9, 1, 5, 6],
+                                    pointers: [{ label: 'i', index: 1, color: '#ff4757' }],
+                                    highlights: [1, 2]
+                                }
+                            };
+                            
+                            engine.drawStep(step);
+                            
+                            return {
+                                passed: true,
+                                message: 'Array visualization rendered successfully'
+                            };
+                        } catch (e) {
+                            return {
+                                passed: false,
+                                message: `Array visualization failed: ${e.message}`
+                            };
+                        }
+                    }
+                },
+                {
+                    name: 'Graph Visualization',
+                    test: async () => {
+                        try {
+                            const engine = new VisualizationEngine();
+                            
+                            // Test graph visualization
+                            const step = {
+                                visualization: {
+                                    type: 'graph',
+                                    nodes: [
+                                        { id: 'A', label: 'A', x: 1, y: 1 },
+                                        { id: 'B', label: 'B', x: 2, y: 2 },
+                                        { id: 'C', label: 'C', x: 3, y: 1 }
+                                    ],
+                                    edges: [
+                                        { from: 'A', to: 'B', directed: true },
+                                        { from: 'B', to: 'C', directed: true }
+                                    ],
+                                    highlights: ['B']
+                                }
+                            };
+                            
+                            engine.drawStep(step);
+                            
+                            return {
+                                passed: true,
+                                message: 'Graph visualization rendered successfully'
+                            };
+                        } catch (e) {
+                            return {
+                                passed: false,
+                                message: `Graph visualization failed: ${e.message}`
+                            };
+                        }
+                    }
+                }
+            ];
+            
+            async function runTests() {
+                const resultsContainer = document.getElementById('test-results');
+                let passedCount = 0;
+                
+                // Add info about the test
+                const infoElement = document.createElement('div');
+                infoElement.className = 'test-result info';
+                infoElement.textContent = 'Running integration tests...';
+                resultsContainer.appendChild(infoElement);
+                
+                // Run each test
+                for (const test of tests) {
+                    const testElement = document.createElement('div');
+                    testElement.className = 'test-section';
+                    
+                    const title = document.createElement('div');
+                    title.textContent = test.name;
+                    title.style.fontWeight = 'bold';
+                    testElement.appendChild(title);
+                    
+                    try {
+                        const result = await test.test();
+                        
+                        const resultElement = document.createElement('div');
+                        resultElement.className = `test-result ${result.passed ? 'success' : 'error'}`;
+                        resultElement.textContent = result.passed ? 'PASSED' : 'FAILED';
+                        testElement.appendChild(resultElement);
+                        
+                        if (result.message) {
+                            const messageElement = document.createElement('div');
+                            messageElement.textContent = result.message;
+                            testElement.appendChild(messageElement);
+                        }
+                        
+                        if (result.passed) passedCount++;
+                        
+                    } catch (e) {
+                        const errorElement = document.createElement('div');
+                        errorElement.className = 'test-result error';
+                        errorElement.textContent = 'ERROR';
+                        testElement.appendChild(errorElement);
+                        
+                        const messageElement = document.createElement('div');
+                        messageElement.textContent = `Test crashed: ${e.message}`;
+                        testElement.appendChild(messageElement);
+                    }
+                    
+                    resultsContainer.appendChild(testElement);
+                }
+                
+                // Add summary
+                const summaryElement = document.createElement('div');
+                summaryElement.className = 'test-section';
+                summaryElement.innerHTML = `
+                    <div style="font-weight: bold;">Test Summary</div>
+                    <div class="test-result ${passedCount === tests.length ? 'success' : 'error'}">
+                        ${passedCount} of ${tests.length} tests passed
+                    </div>
+                `;
+                resultsContainer.appendChild(summaryElement);
+                
+                return passedCount === tests.length;
+            }
+            
+            // Load the required scripts first
+            function loadScripts() {
+                const scripts = [
+                    'https://cdnjs.cloudflare.com/ajax/libs/acorn/8.7.0/acorn.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/acorn/8.7.0/acorn_walk.min.js',
+                    'js/visualization-engine.js',
+                    'js/code-executor.js',
+                    'js/ui-controls.js'
+                ];
+                
+                let loadedCount = 0;
+                
+                scripts.forEach(src => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        loadedCount++;
+                        if (loadedCount === scripts.length) {
+                            // All scripts loaded, run tests
+                            runTests();
+                        }
+                    };
+                    script.onerror = (e) => {
+                        console.error(`Failed to load ${src}:`, e);
+                        const errorElement = document.createElement('div');
+                        errorElement.className = 'test-result error';
+                        errorElement.textContent = `Failed to load script: ${src}`;
+                        document.getElementById('test-results').appendChild(errorElement);
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+            
+            // Start loading scripts
+            loadScripts();
+        </script>
+    </div>
+</body>
+</html>
